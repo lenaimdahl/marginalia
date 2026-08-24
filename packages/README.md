@@ -21,7 +21,7 @@ Install dependencies and start the Vite development server from the repository r
 
 ```bash
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
 
@@ -50,6 +50,8 @@ The backend listens on `http://localhost:8080` by default. Its health endpoint i
 GET http://localhost:8080/health
 ```
 
+The backend has no database dependency. MongoDB is not used.
+
 To use another port:
 
 ```bash
@@ -66,7 +68,14 @@ go vet ./...
 gofmt -d .
 ```
 
-The backend is currently a minimal executable. The HTTP API, data model, persistence, and health endpoint will be added in later tickets.
+The backend is currently a minimal executable with a health endpoint. The application API, data model, and persistence will be added in later tickets.
+
+To run the backend in Docker:
+
+```bash
+docker build -t marginalia-backend:local backend
+docker run --rm -p 8080:8080 marginalia-backend:local
+```
 
 ## Development workflow
 
@@ -79,7 +88,7 @@ Terminal 2: cd backend && go run .
 
 The frontend is normally available at `http://localhost:5173` and the backend at `http://localhost:8080`. Frontend dependencies belong in `frontend/`; the Go backend does not use `package.json` or `node_modules`.
 
-Environment values are listed in `.env.example`. Vite environment variables must use the `VITE_` prefix. The Go server currently reads `PORT` directly from the shell.
+Environment values are listed in `.env.example`. Vite environment variables must use the `VITE_` prefix. The Go server reads `PORT` directly from the shell or container environment.
 
 Generated and local-only files such as `node_modules/` and `dist/` must not be committed.
 
