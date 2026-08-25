@@ -100,14 +100,16 @@ func (j *Label) UnmarshalJSON(value []byte) error {
 
 type Status string
 
-const StatusRead Status = "read"
+const StatusFinished Status = "finished"
+const StatusQuit Status = "quit"
 const StatusReading Status = "reading"
 const StatusWillRead Status = "will-read"
 
 var enumValues_Status = []interface{}{
 	"will-read",
 	"reading",
-	"read",
+	"finished",
+	"quit",
 }
 
 // UnmarshalJSON implements json.Unmarshaler.

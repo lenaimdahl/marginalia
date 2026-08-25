@@ -7,4 +7,5 @@ type: string
 enum:
   - will-read
   - reading
-  - read
+  - finished
+  - quit

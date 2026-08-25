@@ -2,19 +2,13 @@
 
 Marginalia is a reading tracker for books, labels, personal notes, and a future reading journal.
 
-The project is split into a React frontend and a Go backend:
-
-```text
-marginalia/
-└── packages/
-	├── frontend/   # React, TypeScript, Vite, Oxlint
-	└── backend/    # Go application
-```
+The project is split into a React frontend and a Go backend.
 
 ## Prerequisites
 
 - Node.js and npm
 - Go version specified in `backend/go.mod`
+- Docker Desktop
 
 ## Frontend
 
@@ -22,11 +16,10 @@ Install dependencies and start the Vite development server:
 
 ```bash
 cd packages/frontend
-npm ci
 npm run dev
 ```
 
-The frontend is available at the URL printed by Vite, usually `http://localhost:5173`.
+The frontend is normally available at `http://localhost:5173`.
 
 Frontend checks:
 
@@ -36,23 +29,24 @@ npm run build
 npm run lint
 ```
 
-## Backend
+## Backend API
 
-Start the Go application:
+The backend provides these endpoints:
+
+```text
+GET /health
+POST /books
+OPTIONS /books
+```
+
+To run the backend locally without Docker:
 
 ```bash
 cd packages/backend
 go run .
 ```
 
-The backend listens on `http://localhost:8080` by default. Its health endpoint is:
-`Book`, `Label`, and `Status` are defined once as JSON Schema in `api/models/*.yaml`. Go and TypeScript model types are generated from these files. The API endpoints are defined separately in `api/openapi.yaml`, which generates the frontend API client.
-
-```text
-GET http://localhost:8080/health
-```
-
-To use another port:
+The backend listens on `http://localhost:8080` by default. To use another port:
 
 ```bash
 cd packages/backend
@@ -68,56 +62,123 @@ go vet ./...
 gofmt -d .
 ```
 
-The backend is currently a minimal executable with a health endpoint and generated data model types. The application API and persistence will be added in later tickets.
+## Database and Docker
 
-To run the backend in Docker:
+PostgreSQL and the Go backend run together through Docker Compose.
 
-```bash
-docker build -t marginalia-backend:local backend
-docker run --rm -p 8080:8080 marginalia-backend:local
-```
-
-## Data model
-
-`Book`, `Label`, and `Status` are defined as JSON Schema in `api/models/*.yaml` for the backend. The frontend API client and its types are generated from `api/openapi.yaml`.
-
-Regenerate backend models after editing a schema file:
+Start both services from the repository root:
 
 ```bash
-cd packages/frontend && npm run generate:types   # -> src/types/generated/*.d.ts
-cd packages/backend && go generate ./...          # -> models/generated.go
+docker compose up --build
 ```
 
-The API contract is defined in `api/openapi.yaml`. Regenerate the typed frontend API client after changing it:
+Use `--build` after changing Go code, the Dockerfile, `go.mod`, or `go.sum`. If nothing changed, `docker compose up` is sufficient.
 
-```bash
-cd packages/frontend && npm run generate:api-client   # -> src/api/generated/generated.ts
-```
-
-CI fails if generated output is out of date with the schema files.
-
-## Development workflow
-
-Run the frontend and backend in separate terminal windows:
+The services are available at:
 
 ```text
-Terminal 1: cd packages/frontend && npm run dev
-Terminal 2: cd packages/backend && go run .
+PostgreSQL: localhost:5432
+Backend:    http://localhost:8080
 ```
 
-The frontend is normally available at `http://localhost:5173` and the backend at `http://localhost:8080`. Frontend dependencies belong in `frontend/`; the Go backend does not use `package.json` or `node_modules`.
+The local database uses:
 
-Environment values are listed in `packages/.env.example`. Vite environment variables must use the `VITE_` prefix. The Go server reads `PORT` directly from the shell or container environment.
+```text
+User:     postgres
+Password: your-password
+Database: marginalia_db
+```
+
+These are local development credentials only.
+
+Create the `books` table from the repository root:
+
+```bash
+./scripts/migrate.sh
+```
+
+The script can be run repeatedly. It does not delete existing books.
+
+Inspect the database directly:
+
+```bash
+docker exec -it marginalia-postgres psql -U postgres -d marginalia_db
+```
+
+Useful PostgreSQL commands:
+
+```sql
+\dt
+\d books
+SELECT * FROM books;
+\q
+```
+
+Stop the services with `Ctrl+C` when `docker compose up` is running, or use:
+
+```bash
+docker compose down
+```
+
+The database data is kept in the `marginalia_pgdata` Docker volume. To delete the data too:
+
+```bash
+docker compose down -v
+```
+
+## Data model and generated files
+
+`Book`, `Label`, and `Status` are defined as JSON Schema in `api/models/*.yaml`.
+
+After changing a schema, regenerate the frontend types:
+
+```bash
+cd packages/frontend
+npm run generate:types
+```
+
+Regenerate the backend model types with:
+
+```bash
+cd packages/backend
+go generate ./...
+```
+
+The API contract is defined in `api/openapi.yaml`. After changing it, regenerate the typed frontend API client:
+
+```bash
+cd packages/frontend
+npm run generate:api-client
+```
+
+Current book statuses are:
+
+```text
+will-read
+reading
+finished
+quit
+```
 
 Generated and local-only files such as `node_modules/` and `dist/` must not be committed.
 
+## Complete development workflow
+
+Use separate terminals:
+
+```text
+Terminal 1: docker compose up --build
+Terminal 2: ./scripts/migrate.sh
+Terminal 3: cd packages/frontend && npm run dev
+```
+
+The frontend runs at `http://localhost:5173` and the backend at `http://localhost:8080`.
+
 ## Planned features
 
-- Go HTTP API for books
-- Book statuses: will read, reading, and read
+- Get, update, and delete books through the Go API
 - Labels and filtering
 - Persistent notes per book
-- Database-backed storage
 - Reading journal
 - Search and reading statistics
 - GitHub Actions CI for frontend and backend checks

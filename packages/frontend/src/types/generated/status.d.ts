@@ -8,4 +8,4 @@
 /**
  * Reading status of a book. Allowed values: will-read, reading, read.
  */
-export type Status = "will-read" | "reading" | "read";
+export type Status = "will-read" | "reading" | "finished" | "quit";
