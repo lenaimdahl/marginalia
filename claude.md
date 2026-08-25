@@ -295,4 +295,4 @@ npm run build
 
 ---
 
-_This AGENTS.md is the canonical source for coding and workflow standards for the JustInCase project._
+_This AGENTS.md is the canonical source for coding and workflow standards for the Marginalia project._
