@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: marginalia-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: your-password
+      POSTGRES_DB: marginalia_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - marginalia_pgdata:/var/lib/postgresql/data
+
+volumes:
+  marginalia_pgdata:

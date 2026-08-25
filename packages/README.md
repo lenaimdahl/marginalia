@@ -15,6 +15,7 @@ marginalia/
 
 - Node.js and npm
 - Go version specified in `backend/go.mod`
+- Docker Desktop (for the local Postgres database)
 
 ## Frontend
 
@@ -46,7 +47,6 @@ go run .
 ```
 
 The backend listens on `http://localhost:8080` by default. Its health endpoint is:
-`Book`, `Label`, and `Status` are defined once as JSON Schema in `api/models/*.yaml`. Go and TypeScript model types are generated from these files. The API endpoints are defined separately in `api/openapi.yaml`, which generates the frontend API client.
 
 ```text
 GET http://localhost:8080/health
@@ -75,6 +75,49 @@ To run the backend in Docker:
 ```bash
 docker build -t marginalia-backend:local backend
 docker run --rm -p 8080:8080 marginalia-backend:local
+```
+
+## Database
+
+A local Postgres database runs via Docker Compose, defined in `docker-compose.yml` at the repo root.
+
+Start it:
+
+```bash
+docker compose up -d
+```
+
+Check it's running:
+
+```bash
+docker compose ps
+```
+
+It listens on `localhost:5432` with user `postgres`, password `your-password`, and database `marginalia_db` (placeholder credentials for local development only, not for production).
+
+Connect to it directly, for example to inspect data:
+
+```bash
+docker exec -it marginalia-postgres psql -U postgres -d marginalia_db
+```
+
+Stop it (data is kept in the `marginalia_pgdata` Docker volume):
+
+```bash
+docker compose stop
+```
+
+Remove the container and start fresh while keeping data:
+
+```bash
+docker compose down
+docker compose up -d
+```
+
+To wipe the data too, additionally remove the volume:
+
+```bash
+docker compose down -v
 ```
 
 ## Data model

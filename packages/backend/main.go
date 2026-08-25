@@ -7,6 +7,14 @@ import (
 	"os"
 )
 
+const (
+  host     = "localhost"
+  port     = 5432
+  user     = "postgres"
+  password = "your-password"
+  dbname   = "marginalia_db"
+)
+
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
