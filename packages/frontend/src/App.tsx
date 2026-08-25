@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { CreateBook } from "./components/CreateBook";
+import { CreateBook, type Book } from "./components/CreateBook";
 
 function App() {
-  const [books, setBooks] = useState<string[]>([]);
+  const [books, setBooks] = useState<Book[]>([]);
 
-  function saveBook(title: string) {
-    setBooks((currentBooks) => [...currentBooks, title]);
+  function saveBook(book: Book) {
+    setBooks((currentBooks) => [...currentBooks, book]);
   }
 
   return (
@@ -15,7 +15,9 @@ function App() {
         <CreateBook onSave={saveBook} />
         <ul>
           {books.map((book, index) => (
-            <li key={index}>{book}</li>
+            <li key={index}>
+              {book.title} - {book.author}
+            </li>
           ))}
         </ul>
       </div>
