@@ -6,13 +6,13 @@ export type Book = {
 };
 
 type CreateBookProps = {
-  onSave: (book: Book) => void;
+  onSave: (book: Book) => Promise<void>;
 };
 
 export function CreateBook({ onSave }: CreateBookProps) {
   const [book, setBook] = useState<Book>({ title: "", author: "" });
 
-  function handleSubmit(event: { preventDefault: () => void }) {
+  async function handleSubmit(event: { preventDefault: () => void }) {
     event.preventDefault();
 
     const title = book.title.trim();
@@ -21,7 +21,7 @@ export function CreateBook({ onSave }: CreateBookProps) {
       return;
     }
 
-    onSave({ title, author });
+    await onSave({ title, author });
     setBook({ title: "", author: "" });
   }
 

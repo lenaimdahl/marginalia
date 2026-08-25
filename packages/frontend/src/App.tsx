@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { CreateBook, type Book } from "./components/CreateBook";
+import { useCreateBook } from "./hooks/useCreateBook";
 
-function App() {
+export function App() {
   const [books, setBooks] = useState<Book[]>([]);
+  const { createBook } = useCreateBook();
 
-  function saveBook(book: Book) {
-    setBooks((currentBooks) => [...currentBooks, book]);
+  async function saveBook(book: Book) {
+    const savedBook = await createBook(book);
+
+    setBooks((currentBooks) => [...currentBooks, savedBook]);
   }
 
   return (
@@ -24,5 +28,3 @@ function App() {
     </main>
   );
 }
-
-export default App;
