@@ -1,0 +1,10 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "status.yaml"
+title: Status
+description: >-
+  Reading status of a book. Allowed values: will-read, reading, read.
+type: string
+enum:
+  - will-read
+  - reading
+  - read

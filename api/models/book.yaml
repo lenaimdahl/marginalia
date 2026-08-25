@@ -1,0 +1,38 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "book.yaml"
+title: Book
+description: A book tracked in Marginalia.
+type: object
+properties:
+  id:
+    type: string
+    description: Unique identifier of the book.
+  title:
+    type: string
+    description: Title of the book.
+  author:
+    type: string
+    description: Author of the book.
+  status:
+    $ref: "status.yaml"
+  labels:
+    type: array
+    description: Labels attached to the book. Optional, defaults to an empty list.
+    items:
+      $ref: "label.yaml"
+  notes:
+    type: string
+    description: Free-form notes about the book. Optional.
+  dateAdded:
+    type: string
+    format: date-time
+    description: >-
+      RFC 3339 timestamp in UTC of when the book was added. The frontend
+      converts this to UTC+1 for display, per AGENTS.md section 13.
+required:
+  - id
+  - title
+  - author
+  - status
+  - dateAdded
+additionalProperties: false
