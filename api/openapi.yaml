@@ -1,0 +1,26 @@
+openapi: 3.1.0
+info:
+  title: Marginalia API
+  version: 0.1.0
+  description: HTTP API for the Marginalia reading tracker.
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Check backend health
+      responses:
+        "200":
+          description: Backend is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                properties:
+                  status:
+                    type: string
+                    const: ok

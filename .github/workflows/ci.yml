@@ -23,6 +23,13 @@ jobs:
           go-version-file: packages/backend/go.mod
           cache: true
 
+      - name: Verify generated models are up to date
+        working-directory: packages/backend
+        run: |
+          go generate ./...
+          git add -A
+          git diff --cached --exit-code
+
       - name: Check formatting
         working-directory: packages/backend
         run: |
@@ -52,6 +59,20 @@ jobs:
       - name: Install dependencies
         working-directory: packages/frontend
         run: npm ci
+
+      - name: Verify generated model types are up to date
+        working-directory: packages/frontend
+        run: |
+          npm run generate:types
+          git add -A -- src/types/generated
+          git diff --cached --exit-code -- src/types/generated
+
+      - name: Verify generated API client is up to date
+        working-directory: packages/frontend
+        run: |
+          npm run generate:api-client
+          git add -A -- src/api/generated
+          git diff --cached --exit-code -- src/api/generated
 
       - name: Lint
         working-directory: packages/frontend
