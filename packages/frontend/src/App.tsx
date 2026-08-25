@@ -2,7 +2,7 @@ import { useState } from "react";
 import { CreateBook, type Book } from "./components/CreateBook";
 import { useCreateBook } from "./hooks/useCreateBook";
 
-export function App() {
+function App() {
   const [books, setBooks] = useState<Book[]>([]);
   const { createBook } = useCreateBook();
 
@@ -28,3 +28,5 @@ export function App() {
     </main>
   );
 }
+
+export default App;

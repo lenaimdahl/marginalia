@@ -11,5 +11,16 @@ services:
     volumes:
       - marginalia_pgdata:/var/lib/postgresql/data
 
+  backend:
+    build:
+      context: ./packages/backend
+    container_name: marginalia-backend
+    environment:
+      DATABASE_URL: postgres://postgres:your-password@postgres:5432/marginalia_db
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
 volumes:
   marginalia_pgdata:

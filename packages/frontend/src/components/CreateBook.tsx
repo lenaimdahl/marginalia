@@ -1,16 +1,14 @@
 import { useState } from "react";
+import type { Book } from "../types/generated/book";
 
-export type Book = {
-  title: string;
-  author: string;
-};
+type CreateBookInput = Pick<Book, "title" | "author">;
 
 type CreateBookProps = {
-  onSave: (book: Book) => Promise<void>;
+  onSave: (book: CreateBookInput) => Promise<void>;
 };
 
 export function CreateBook({ onSave }: CreateBookProps) {
-  const [book, setBook] = useState<Book>({ title: "", author: "" });
+  const [book, setBook] = useState<CreateBookInput>({ title: "", author: "" });
 
   async function handleSubmit(event: { preventDefault: () => void }) {
     event.preventDefault();
