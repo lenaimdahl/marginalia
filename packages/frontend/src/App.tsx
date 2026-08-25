@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { CreateBook, type Book } from "./components/CreateBook";
+import { CreateBook, type CreateBookInput } from "./components/CreateBook";
+import type { Book } from "./types/generated/book";
 import { useCreateBook } from "./hooks/useCreateBook";
 
 function App() {
   const [books, setBooks] = useState<Book[]>([]);
   const { createBook } = useCreateBook();
 
-  async function saveBook(book: Book) {
+  async function saveBook(book: CreateBookInput) {
     const savedBook = await createBook(book);
 
     setBooks((currentBooks) => [...currentBooks, savedBook]);

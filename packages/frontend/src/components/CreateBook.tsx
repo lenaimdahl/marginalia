@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Book } from "../types/generated/book";
 
-type CreateBookInput = Pick<Book, "title" | "author">;
+export type CreateBookInput = Pick<Book, "title" | "author">;
 
 type CreateBookProps = {
   onSave: (book: CreateBookInput) => Promise<void>;
