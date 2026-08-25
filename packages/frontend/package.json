@@ -12,7 +12,7 @@
     "generate:api-client": "swagger-typescript-api generate --path ../../api/openapi.yaml --output src/api/generated --name generated.ts --axios"
   },
   "dependencies": {
-    "axios": "1.13.2",
+    "axios": "1.19.0",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
@@ -23,7 +23,7 @@
     "@vitejs/plugin-react": "6.0.4",
     "json-schema-to-typescript": "15.0.4",
     "oxlint": "1.75.0",
-    "swagger-typescript-api": "13.2.13",
+    "swagger-typescript-api": "13.12.6",
     "typescript": "6.0.2",
     "vite": "8.2.0"
   }
