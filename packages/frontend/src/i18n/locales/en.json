@@ -1,0 +1,13 @@
+{
+  "common": {
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "close": "Close",
+    "notes": "Notes"
+  },
+  "components": {
+    "createBook": {}
+  },
+  "pages": {}
+}
