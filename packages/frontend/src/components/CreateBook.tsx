@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { Book, Status } from "../types/generated/book";
+import { Button } from "./Button";
 
 export type CreateBookInput = Pick<
   Book,
@@ -13,6 +15,7 @@ type CreateBookProps = {
 };
 
 export function CreateBook({ onSave }: CreateBookProps) {
+  const { t } = useTranslation();
   const [book, setBook] = useState<CreateBookInput>({
     title: "",
     author: "",
@@ -45,36 +48,42 @@ export function CreateBook({ onSave }: CreateBookProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="book-form" onSubmit={handleSubmit}>
       <input
+        aria-label={t("components.createBook.title")}
         type="text"
-        placeholder="Buchtitel"
+        placeholder={t("components.createBook.title")}
         value={book.title}
         onChange={(event) => handleChangeBook("title", event.target.value)}
       />
       <input
+        aria-label={t("components.createBook.author")}
         type="text"
-        placeholder="Autor"
+        placeholder={t("components.createBook.author")}
         value={book.author}
         onChange={(event) => handleChangeBook("author", event.target.value)}
       />
       <select
+        aria-label={t("components.createBook.status")}
         value={book.status}
         onChange={(event) =>
           handleChangeBook("status", event.target.value as Status)
         }
       >
-        <option value="will-read">Möchte ich lesen</option>
-        <option value="reading">Lese ich gerade</option>
-        <option value="finished">Gelesen</option>
-        <option value="quit">Abgebrochen</option>
+        <option value="will-read">{t("status.will-read")}</option>
+        <option value="reading">{t("status.reading")}</option>
+        <option value="finished">{t("status.finished")}</option>
+        <option value="quit">{t("status.quit")}</option>
       </select>
       <textarea
-        placeholder="Notizen"
+        aria-label={t("common.notes")}
+        placeholder={t("common.notes")}
         value={book.notes}
         onChange={(event) => handleChangeBook("notes", event.target.value)}
       />
-      <button type="submit">Buch speichern</button>
+      <Button variant="submit" type="submit">
+        {t("components.createBook.submit")}
+      </Button>
     </form>
   );
 }
