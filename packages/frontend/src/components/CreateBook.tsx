@@ -1,43 +1,89 @@
 import { useState } from "react";
-import type { Book } from "../types/generated/book";
+import { useTranslation } from "react-i18next";
+import type { Book, Status } from "../types/generated/book";
+import { Button } from "./Button";
 
-export type CreateBookInput = Pick<Book, "title" | "author">;
+export type CreateBookInput = Pick<
+  Book,
+  "title" | "author" | "status" | "notes"
+>;
+
+type EditableBookField = keyof CreateBookInput;
 
 type CreateBookProps = {
   onSave: (book: CreateBookInput) => Promise<void>;
 };
 
 export function CreateBook({ onSave }: CreateBookProps) {
-  const [book, setBook] = useState<CreateBookInput>({ title: "", author: "" });
+  const { t } = useTranslation();
+  const [book, setBook] = useState<CreateBookInput>({
+    title: "",
+    author: "",
+    status: "will-read",
+    notes: "",
+  });
+
+  function handleChangeBook(field: EditableBookField, value: string) {
+    setBook(
+      (currentBook) =>
+        ({
+          ...currentBook,
+          [field]: value,
+        }) as CreateBookInput,
+    );
+  }
 
   async function handleSubmit(event: { preventDefault: () => void }) {
     event.preventDefault();
 
     const title = book.title.trim();
     const author = book.author.trim();
+    const notes = book.notes?.trim();
     if (!title || !author) {
       return;
     }
 
-    await onSave({ title, author });
-    setBook({ title: "", author: "" });
+    await onSave({ title, author, status: book.status, notes });
+    setBook({ title: "", author: "", status: "will-read", notes: "" });
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="book-form" onSubmit={handleSubmit}>
       <input
+        aria-label={t("components.createBook.title")}
         type="text"
-        placeholder="Buchtitel"
+        placeholder={t("components.createBook.title")}
         value={book.title}
-        onChange={(event) => setBook({ ...book, title: event.target.value })}
+        onChange={(event) => handleChangeBook("title", event.target.value)}
       />
       <input
+        aria-label={t("components.createBook.author")}
         type="text"
-        placeholder="Autor"
+        placeholder={t("components.createBook.author")}
         value={book.author}
-        onChange={(event) => setBook({ ...book, author: event.target.value })}
+        onChange={(event) => handleChangeBook("author", event.target.value)}
       />
-      <button type="submit">Buch speichern</button>
+      <select
+        aria-label={t("components.createBook.status")}
+        value={book.status}
+        onChange={(event) =>
+          handleChangeBook("status", event.target.value as Status)
+        }
+      >
+        <option value="will-read">{t("status.will-read")}</option>
+        <option value="reading">{t("status.reading")}</option>
+        <option value="finished">{t("status.finished")}</option>
+        <option value="quit">{t("status.quit")}</option>
+      </select>
+      <textarea
+        aria-label={t("common.notes")}
+        placeholder={t("common.notes")}
+        value={book.notes}
+        onChange={(event) => handleChangeBook("notes", event.target.value)}
+      />
+      <Button variant="submit" type="submit">
+        {t("components.createBook.submit")}
+      </Button>
     </form>
   );
 }

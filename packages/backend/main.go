@@ -14,6 +14,7 @@ import (
 type createBookRequest struct {
 	Title  string `json:"title"`
 	Author string `json:"author"`
+	Status string `json:"status"`
 }
 
 type bookResponse struct {
@@ -88,11 +89,16 @@ func createBookHandler(database *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 
+		status := input.Status
+		if status == "" {
+			status = "will-read"
+		}
+
 		book := bookResponse{
 			ID:     uuid.NewString(),
 			Title:  input.Title,
 			Author: input.Author,
-			Status: "will-read",
+			Status: status,
 		}
 
 		err := database.QueryRow(request.Context(), `

@@ -1,0 +1,44 @@
+{
+  "common": {
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "close": "Close",
+    "notes": "Notes",
+    "addBook": "Add book",
+    "switchLanguage": "Switch language"
+  },
+  "components": {
+    "createBook": {
+      "title": "Book title",
+      "author": "Author",
+      "status": "Reading status",
+      "submit": "Save book"
+    }
+  },
+  "status": {
+    "will-read": "Want to read",
+    "reading": "Reading",
+    "finished": "Finished",
+    "quit": "Abandoned"
+  },
+  "pages": {
+    "home": {
+      "title": "Welcome to your Book Page",
+      "subTitle": "Find new books or have a look",
+      "eyebrow": "MARGINALIA / YOUR LIBRARY",
+      "imageAlt": "Image of your library",
+      "imagePlaceholder": "YOUR IMAGE HERE",
+      "dialog": { "eyebrow": "NEW ENTRY", "title": "Which book is moving in?" },
+      "library": {
+        "eyebrow": "YOUR COLLECTION",
+        "title": "Reading matter",
+        "count": "{{count}} books"
+      },
+      "empty": {
+        "title": "The shelf is still empty.",
+        "description": "Add your first book and keep track of what is on your mind."
+      }
+    }
+  }
+}

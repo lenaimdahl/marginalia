@@ -1,0 +1,47 @@
+{
+  "common": {
+    "add": "Hinzufügen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "close": "Schließen",
+    "notes": "Notizen",
+    "addBook": "Buch hinzufügen",
+    "switchLanguage": "Sprache wechseln"
+  },
+  "components": {
+    "createBook": {
+      "title": "Buchtitel",
+      "author": "Autor",
+      "status": "Lesestatus",
+      "submit": "Buch speichern"
+    }
+  },
+  "status": {
+    "will-read": "Möchte ich lesen",
+    "reading": "Lese ich gerade",
+    "finished": "Gelesen",
+    "quit": "Abgebrochen"
+  },
+  "pages": {
+    "home": {
+      "title": "Hi, hier ist deine Buchseite",
+      "subTitle": "Finde neue Bücher oder schaue dich um.",
+      "eyebrow": "MARGINALIA / DEINE BIBLIOTHEK",
+      "imageAlt": "Bild deiner Bibliothek",
+      "imagePlaceholder": "DEIN BILD HIER",
+      "dialog": {
+        "eyebrow": "NEUER EINTRAG",
+        "title": "Welches Buch zieht bei dir ein?"
+      },
+      "library": {
+        "eyebrow": "DEINE SAMMLUNG",
+        "title": "Lesestoff",
+        "count": "{{count}} Bücher"
+      },
+      "empty": {
+        "title": "Noch ist das Regal leer.",
+        "description": "Füge dein erstes Buch hinzu und halte fest, was dich gerade beschäftigt."
+      }
+    }
+  }
+}
