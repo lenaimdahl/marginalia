@@ -14,10 +14,9 @@ export function Dialog({ eyebrow, title, children, onClose }: DialogProps) {
 
   return (
     <div className="dialog-backdrop">
-      <section
+      <dialog
         className="form-panel dialog-panel"
-        role="dialog"
-        aria-modal="true"
+        open
         aria-labelledby="dialog-title"
       >
         <div className="section-heading">
@@ -36,7 +35,7 @@ export function Dialog({ eyebrow, title, children, onClose }: DialogProps) {
           </Button>
         </div>
         {children}
-      </section>
+      </dialog>
     </div>
   );
 }
