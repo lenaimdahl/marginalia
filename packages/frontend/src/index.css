@@ -70,7 +70,7 @@ button {
   overflow: hidden;
   background: #0033fe;
   color: #fff;
-  box-shadow: 12px 12px 0 #f6c945;
+  box-shadow: 12px 12px 0 #fff022;
 }
 
 .hero-copy {
@@ -348,7 +348,7 @@ h2 {
   }
   .hero-banner {
     grid-template-columns: 1fr;
-    box-shadow: 7px 7px 0 #f6c945;
+    box-shadow: 7px 7px 0 #fff022;
   }
   .hero-copy {
     min-height: 390px;
