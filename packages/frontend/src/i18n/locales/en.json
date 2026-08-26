@@ -9,5 +9,10 @@
   "components": {
     "createBook": {}
   },
-  "pages": {}
+  "pages": {
+    "home": {
+      "title": "Welcome to your Book Page",
+      "subTitle": "Find new books or have a look"
+    }
+  }
 }
