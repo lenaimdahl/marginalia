@@ -1,12 +1,15 @@
 import { useState } from "react";
 import type { Book } from "../types/generated/book";
 import { useCreateBook } from "../hooks/useCreateBook";
-import { CreateBook, type CreateBookInput } from "../components/CreateBook";
-import { BookList } from "../components/BookList";
-import { Button } from "../components/Button";
-import { Dialog } from "../components/Dialog";
+import {
+  CreateBook,
+  type CreateBookInput,
+} from "../Features/createBooks/CreateBook";
+import { BookList } from "../Features/bookList/BookList";
+import { CreateBookDialog } from "../Features/createBooks/CreateBookDialog";
 import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
+import Banner from "../components/Banner";
 
 function Home() {
   const { t } = useTranslation();
@@ -27,33 +30,16 @@ function Home() {
         <span className="brand-mark">MARGINALIA</span>
         <LanguageSwitcher />
       </header>
-      <section className="hero-banner">
-        <div className="hero-copy">
-          <p className="eyebrow">{t("pages.home.eyebrow")}</p>
-          <h1>{t("pages.home.title")}</h1>
-          <p className="hero-subtitle">{t("pages.home.subTitle")}</p>
-          <Button
-            type="button"
-            onClick={() => setIsFormOpen((currentState) => !currentState)}
-          >
-            <span aria-hidden="true">+</span>
-            {isFormOpen ? t("common.close") : t("common.addBook")}
-          </Button>
-        </div>
-        <div className="hero-image">
-          <img src="/hero-image.jpg" alt={t("pages.home.imageAlt")} />
-          <span>{t("pages.home.imagePlaceholder")}</span>
-        </div>
-      </section>
+      <Banner isFormOpen={isFormOpen} setIsFormOpen={setIsFormOpen} />
 
       {isFormOpen && (
-        <Dialog
+        <CreateBookDialog
           eyebrow={t("pages.home.dialog.eyebrow")}
           title={t("pages.home.dialog.title")}
           onClose={() => setIsFormOpen(false)}
         >
           <CreateBook onSave={saveBook} />
-        </Dialog>
+        </CreateBookDialog>
       )}
 
       <section className="library-section">

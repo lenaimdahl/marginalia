@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { Book, Status } from "../types/generated/book";
-import { Button } from "./Button";
+import type { Book, Status } from "../../types/generated/book";
+import { Button } from "../../components/Button";
 
 export type CreateBookInput = Pick<
   Book,

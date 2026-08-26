@@ -1,4 +1,4 @@
-import type { Book } from "../types/generated/book";
+import type { Book } from "../../types/generated/book";
 import { useTranslation } from "react-i18next";
 
 type BookListProps = {

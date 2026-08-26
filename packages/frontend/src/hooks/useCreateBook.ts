@@ -1,24 +1,28 @@
 import type { Book } from "../types/generated/book";
-import type { CreateBookInput } from "../components/CreateBook";
+import type { CreateBookInput } from "../Features/createBooks/CreateBook";
+import { useMutation } from "@tanstack/react-query";
 
 export function useCreateBook() {
-  async function createBook(book: CreateBookInput): Promise<Book> {
-    const response = await fetch("http://localhost:8080/books", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(book),
-    });
+  const createBookMutation = useMutation<Book, Error, CreateBookInput>({
+    mutationFn: async (book) => {
+      const response = await fetch("http://localhost:8080/books", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(book),
+      });
 
-    if (!response.ok) {
-      throw new Error("Buch konnte nicht gespeichert werden");
-    }
+      if (!response.ok) {
+        throw new Error("Buch konnte nicht gespeichert werden");
+      }
 
-    return response.json();
-  }
+      return response.json();
+    },
+  });
 
   return {
-    createBook,
+    createBook: createBookMutation.mutateAsync,
+    isCreatingBook: createBookMutation.isPending,
   };
 }
