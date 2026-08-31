@@ -130,6 +130,7 @@ func createBookHandler(database *pgxpool.Pool, allowedOrigin string) http.Handle
 			RETURNING date_added
 		`, book.ID, book.Title, book.Author, book.Status).Scan(&book.DateAdded)
 		if err != nil {
+			log.Printf("could not save book: %v", err)
 			writeJSONError(response, http.StatusInternalServerError, "could not save book")
 			return
 		}
