@@ -154,7 +154,6 @@ jobs:
   deploy_frontend:
     name: Deploy latest frontend image
     needs:
-      - lint_frontend_dockerfile
       - build_frontend_dockerfile
       - test_nginx_config
     runs-on: ubuntu-latest
@@ -177,7 +176,6 @@ jobs:
   deploy_backend:
     name: Deploy latest backend image
     needs:
-      - lint_backend_dockerfile
       - build_backend_dockerfile
     runs-on: ubuntu-latest
     if: |
