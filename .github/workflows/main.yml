@@ -1,0 +1,196 @@
+name: Main
+
+permissions: {}
+
+on:
+  push:
+    # TODO: drop feat/backend-api-5, keep main only
+    branches: [main, feat/backend-api-5]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  frontend_checks:
+    name: Frontend lint, test, and build
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: packages/frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: packages/frontend
+        run: npm ci
+
+      - name: Lint
+        working-directory: packages/frontend
+        run: npm run lint
+
+      - name: Build
+        working-directory: packages/frontend
+        run: npm run build
+
+  backend_checks:
+    name: Backend format, vet, and test
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Set up Go
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
+        with:
+          go-version-file: packages/backend/go.mod
+          cache: true
+
+      - name: Check formatting
+        working-directory: packages/backend
+        run: test -z "$(gofmt -l .)"
+
+      - name: Static checks
+        working-directory: packages/backend
+        run: go vet ./...
+
+  lint_frontend_dockerfile:
+    name: Lint frontend Dockerfile
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Lint frontend Dockerfile
+        uses: hadolint/hadolint-action@2332a7b74a6de0dda2e2221d575162eba76ba5e5
+        with:
+          dockerfile: packages/frontend/Dockerfile
+
+  lint_backend_dockerfile:
+    name: Lint backend Dockerfile
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Lint backend Dockerfile
+        uses: hadolint/hadolint-action@2332a7b74a6de0dda2e2221d575162eba76ba5e5
+        with:
+          dockerfile: packages/backend/Dockerfile
+
+  build_frontend_dockerfile:
+    name: Build frontend Docker image
+    needs: frontend_checks
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c
+
+      - name: Build Docker image
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a
+        with:
+          context: packages/frontend
+          file: packages/frontend/Dockerfile
+          push: false
+
+  build_backend_dockerfile:
+    name: Build backend Docker image
+    needs: backend_checks
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c
+
+      - name: Build Docker image
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a
+        with:
+          context: packages/backend
+          file: packages/backend/Dockerfile
+          push: false
+
+  test_nginx_config:
+    name: Test nginx config
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    container:
+      image: nginx:1.31.3-alpine
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Generate and validate nginx config
+        run: |
+          cp packages/frontend/nginx.conf /etc/nginx/conf.d/default.conf
+          nginx -t
+
+  deploy_frontend:
+    name: Deploy latest frontend image
+    needs:
+      - lint_frontend_dockerfile
+      - build_frontend_dockerfile
+      - test_nginx_config
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feat/backend-api-5'))
+    # TODO: drop feat/backend-api-5, keep main only
+    permissions:
+      deployments: write
+    steps:
+      - name: Deploy
+        uses: ffflorian/actions/coolify-deploy@c3ebe9a46aca0870e964c6c07bbd38395515d095
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          environment: frontend-production
+          domain: ${{ secrets.COOLIFY_DOMAIN }}
+          token: ${{ secrets.COOLIFY_TOKEN }}
+          uuid: ${{ secrets.COOLIFY_UUID_FRONTEND }}
+
+  deploy_backend:
+    name: Deploy latest backend image
+    needs:
+      - lint_backend_dockerfile
+      - build_backend_dockerfile
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feat/backend-api-5'))
+    # TODO: drop feat/backend-api-5, keep main only
+    permissions:
+      deployments: write
+    steps:
+      - name: Deploy
+        uses: ffflorian/actions/coolify-deploy@c3ebe9a46aca0870e964c6c07bbd38395515d095
+        with:
+          environment: backend-production
+          domain: ${{ secrets.COOLIFY_DOMAIN }}
+          token: ${{ secrets.COOLIFY_TOKEN }}
+          uuid: ${{ secrets.COOLIFY_UUID_BACKEND }}
