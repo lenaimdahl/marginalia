@@ -3,11 +3,14 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -25,6 +28,10 @@ type bookResponse struct {
 	DateAdded time.Time `json:"dateAdded"`
 }
 
+type errorResponse struct {
+	Error string `json:"error"`
+}
+
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -34,6 +41,11 @@ func main() {
 	databaseURL := os.Getenv("DATABASE_URL")
 	if databaseURL == "" {
 		databaseURL = "postgres://postgres:your-password@localhost:5432/marginalia_db"
+	}
+
+	corsAllowedOrigin := os.Getenv("CORS_ALLOWED_ORIGIN")
+	if corsAllowedOrigin == "" {
+		corsAllowedOrigin = "http://localhost:5173"
 	}
 
 	database, err := pgxpool.New(context.Background(), databaseURL)
@@ -47,45 +59,56 @@ func main() {
 	}
 
 	http.HandleFunc("GET /health", healthHandler)
-	http.HandleFunc("OPTIONS /books", optionsBooksHandler)
-	http.HandleFunc("POST /books", createBookHandler(database))
+	http.HandleFunc("OPTIONS /books", optionsBooksHandler(corsAllowedOrigin))
+	http.HandleFunc("POST /books", createBookHandler(database, corsAllowedOrigin))
 
-	log.Printf("Marginalia backend listening on http://localhost:%s", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		log.Fatal(err)
+	server := &http.Server{Addr: ":" + port}
+
+	go func() {
+		log.Printf("Marginalia backend listening on http://localhost:%s", port)
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatal(err)
+		}
+	}()
+
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
+	<-stop
+
+	log.Println("shutting down")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
+		log.Printf("graceful shutdown failed: %v", err)
 	}
 }
 
-func optionsBooksHandler(
-	response http.ResponseWriter,
-	request *http.Request,
-) {
-	response.Header().Set(
-		"Access-Control-Allow-Origin",
-		"http://localhost:5173",
-	)
-	response.Header().Set(
-		"Access-Control-Allow-Methods",
-		"POST, OPTIONS",
-	)
-	response.Header().Set(
-		"Access-Control-Allow-Headers",
-		"Content-Type",
-	)
-
-	response.WriteHeader(http.StatusNoContent)
+func setCORSHeaders(response http.ResponseWriter, allowedOrigin string) {
+	response.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
+	response.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	response.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 }
 
-func createBookHandler(database *pgxpool.Pool) http.HandlerFunc {
+func optionsBooksHandler(allowedOrigin string) http.HandlerFunc {
 	return func(response http.ResponseWriter, request *http.Request) {
-		if request.Header.Get("Origin") != "" {
-			response.Header().Set("Access-Control-Allow-Origin", request.Header.Get("Origin"))
-		}
-		response.Header().Set("Content-Type", "application/json")
+		setCORSHeaders(response, allowedOrigin)
+		response.WriteHeader(http.StatusNoContent)
+	}
+}
+
+func writeJSONError(response http.ResponseWriter, status int, message string) {
+	response.Header().Set("Content-Type", "application/json")
+	response.WriteHeader(status)
+	_ = json.NewEncoder(response).Encode(errorResponse{Error: message})
+}
+
+func createBookHandler(database *pgxpool.Pool, allowedOrigin string) http.HandlerFunc {
+	return func(response http.ResponseWriter, request *http.Request) {
+		setCORSHeaders(response, allowedOrigin)
 
 		var input createBookRequest
 		if err := json.NewDecoder(request.Body).Decode(&input); err != nil || input.Title == "" || input.Author == "" {
-			http.Error(response, "title and author are required", http.StatusBadRequest)
+			writeJSONError(response, http.StatusBadRequest, "title and author are required")
 			return
 		}
 
@@ -107,10 +130,11 @@ func createBookHandler(database *pgxpool.Pool) http.HandlerFunc {
 			RETURNING date_added
 		`, book.ID, book.Title, book.Author, book.Status).Scan(&book.DateAdded)
 		if err != nil {
-			http.Error(response, "could not save book", http.StatusInternalServerError)
+			writeJSONError(response, http.StatusInternalServerError, "could not save book")
 			return
 		}
 
+		response.Header().Set("Content-Type", "application/json")
 		response.WriteHeader(http.StatusCreated)
 		_ = json.NewEncoder(response).Encode(book)
 	}

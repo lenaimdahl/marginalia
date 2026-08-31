@@ -17,6 +17,7 @@ services:
     container_name: marginalia-backend
     environment:
       DATABASE_URL: postgres://postgres:your-password@postgres:5432/marginalia_db
+      CORS_ALLOWED_ORIGIN: http://localhost:5173
     ports:
       - "8080:8080"
     depends_on:
