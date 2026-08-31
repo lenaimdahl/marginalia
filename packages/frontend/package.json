@@ -12,6 +12,7 @@
     "generate:api-client": "swagger-typescript-api generate --path ../../api/openapi.yaml --output src/api/generated --name generated.ts --axios"
   },
   "dependencies": {
+    "@tanstack/react-query": "5.102.5",
     "axios": "1.19.0",
     "i18next": "26.3.6",
     "react": "19.2.8",
@@ -26,6 +27,7 @@
     "@vitejs/plugin-react": "6.0.4",
     "json-schema-to-typescript": "15.0.4",
     "oxlint": "1.75.0",
+    "prettier": "3.9.6",
     "swagger-typescript-api": "13.12.6",
     "prettier": "3.9.6",
     "typescript": "6.0.2",
