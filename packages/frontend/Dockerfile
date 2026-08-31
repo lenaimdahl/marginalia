@@ -12,6 +12,7 @@ RUN npm run build
 # Serve
 FROM nginx:1.31.3-alpine
 
+# hadolint ignore=DL3018
 RUN apk add --no-cache curl
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
