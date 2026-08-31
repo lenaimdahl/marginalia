@@ -36,6 +36,11 @@ func main() {
 		databaseURL = "postgres://postgres:your-password@localhost:5432/marginalia_db"
 	}
 
+	corsAllowedOrigin := os.Getenv("CORS_ALLOWED_ORIGIN")
+	if corsAllowedOrigin == "" {
+		corsAllowedOrigin = "http://localhost:5173"
+	}
+
 	database, err := pgxpool.New(context.Background(), databaseURL)
 	if err != nil {
 		log.Fatal(err)
@@ -47,8 +52,8 @@ func main() {
 	}
 
 	http.HandleFunc("GET /health", healthHandler)
-	http.HandleFunc("OPTIONS /books", optionsBooksHandler)
-	http.HandleFunc("POST /books", createBookHandler(database))
+	http.HandleFunc("OPTIONS /books", optionsBooksHandler(corsAllowedOrigin))
+	http.HandleFunc("POST /books", createBookHandler(database, corsAllowedOrigin))
 
 	log.Printf("Marginalia backend listening on http://localhost:%s", port)
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
@@ -56,31 +61,19 @@ func main() {
 	}
 }
 
-func optionsBooksHandler(
-	response http.ResponseWriter,
-	request *http.Request,
-) {
-	response.Header().Set(
-		"Access-Control-Allow-Origin",
-		"http://localhost:5173",
-	)
-	response.Header().Set(
-		"Access-Control-Allow-Methods",
-		"POST, OPTIONS",
-	)
-	response.Header().Set(
-		"Access-Control-Allow-Headers",
-		"Content-Type",
-	)
+func optionsBooksHandler(allowedOrigin string) http.HandlerFunc {
+	return func(response http.ResponseWriter, request *http.Request) {
+		response.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
+		response.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+		response.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-	response.WriteHeader(http.StatusNoContent)
+		response.WriteHeader(http.StatusNoContent)
+	}
 }
 
-func createBookHandler(database *pgxpool.Pool) http.HandlerFunc {
+func createBookHandler(database *pgxpool.Pool, allowedOrigin string) http.HandlerFunc {
 	return func(response http.ResponseWriter, request *http.Request) {
-		if request.Header.Get("Origin") != "" {
-			response.Header().Set("Access-Control-Allow-Origin", request.Header.Get("Origin"))
-		}
+		response.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
 		response.Header().Set("Content-Type", "application/json")
 
 		var input createBookRequest
