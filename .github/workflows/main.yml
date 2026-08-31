@@ -4,8 +4,7 @@ permissions: {}
 
 on:
   push:
-    # TODO: drop feat/backend-api-5, keep main only
-    branches: [main, feat/backend-api-5]
+    branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -159,8 +158,7 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feat/backend-api-5'))
-    # TODO: drop feat/backend-api-5, keep main only
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
     permissions:
       deployments: write
     steps:
@@ -180,8 +178,7 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feat/backend-api-5'))
-    # TODO: drop feat/backend-api-5, keep main only
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
     permissions:
       deployments: write
     steps:
