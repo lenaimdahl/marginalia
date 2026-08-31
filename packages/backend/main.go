@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"embed"
 	"encoding/json"
 	"errors"
 	"github.com/google/uuid"
@@ -13,6 +14,9 @@ import (
 	"syscall"
 	"time"
 )
+
+//go:embed migrations/*.sql
+var migrationFiles embed.FS
 
 type createBookRequest struct {
 	Title  string `json:"title"`
@@ -58,6 +62,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if err := runMigrations(context.Background(), database); err != nil {
+		log.Fatal(err)
+	}
+
 	http.HandleFunc("GET /health", healthHandler)
 	http.HandleFunc("OPTIONS /books", optionsBooksHandler(corsAllowedOrigin))
 	http.HandleFunc("POST /books", createBookHandler(database, corsAllowedOrigin))
@@ -81,6 +89,26 @@ func main() {
 	if err := server.Shutdown(ctx); err != nil {
 		log.Printf("graceful shutdown failed: %v", err)
 	}
+}
+
+func runMigrations(ctx context.Context, database *pgxpool.Pool) error {
+	entries, err := migrationFiles.ReadDir("migrations")
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range entries {
+		sql, err := migrationFiles.ReadFile("migrations/" + entry.Name())
+		if err != nil {
+			return err
+		}
+		if _, err := database.Exec(ctx, string(sql)); err != nil {
+			return err
+		}
+		log.Printf("applied migration %s", entry.Name())
+	}
+
+	return nil
 }
 
 func setCORSHeaders(response http.ResponseWriter, allowedOrigin string) {
